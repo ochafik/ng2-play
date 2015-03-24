@@ -4,10 +4,13 @@ var concat = require('gulp-concat');
 var plumber = require('gulp-plumber');
 var rename = require('gulp-rename');
 var traceur = require('gulp-traceur');
+var sourcemaps = require('gulp-sourcemaps');
+var sass = require('gulp-sass');
 
 var PATHS = {
     src: {
       js: 'src/**/*.js',
+      sass: 'src/**/*.sass',
       html: 'src/**/*.html'
     },
     lib: [
@@ -26,14 +29,25 @@ gulp.task('js', function () {
     return gulp.src(PATHS.src.js)
         .pipe(rename({extname: ''})) //hack, see: https://github.com/sindresorhus/gulp-traceur/issues/54
         .pipe(plumber())
+        .pipe(sourcemaps.init())
         .pipe(traceur({
+            sourceMaps: true,
             modules: 'instantiate',
             moduleName: true,
             annotations: true,
             types: true
         }))
         .pipe(rename({extname: '.js'})) //hack, see: https://github.com/sindresorhus/gulp-traceur/issues/54
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist'));
+});
+
+gulp.task('sass', function () {
+  return gulp.src(PATHS.src.sass)
+      .pipe(sourcemaps.init())
+      .pipe(sass())
+      .pipe(sourcemaps.write('.'))
+      .pipe(gulp.dest('dist'));
 });
 
 gulp.task('html', function () {
@@ -80,4 +94,4 @@ gulp.task('play', ['default'], function () {
     });
 });
 
-gulp.task('default', ['js', 'html', 'libs']);
+gulp.task('default', ['js', 'html', 'libs', 'sass']);
